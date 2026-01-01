@@ -3,226 +3,735 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nail Salon Dashboard</title>
+  <title>Nail Salon – Pro Dashboard</title>
   <style>
-    body { font-family: system-ui, -apple-system, Arial; margin: 0; background:#f6f7fb; }
-    header { padding: 16px 20px; background: #111827; color: white; }
-    main { padding: 16px 20px; display: grid; gap: 16px; grid-template-columns: 1.2fr 0.8fr; }
-    .card { background: white; border-radius: 14px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,.06); }
-    h2 { margin: 0 0 10px; font-size: 16px; }
-    .grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0,1fr)); }
-    .staff { border: 1px solid #eef0f6; border-radius: 12px; padding: 10px; }
-    .row { display:flex; gap: 8px; align-items:center; justify-content: space-between; }
-    .pill { font-size: 12px; padding: 4px 8px; border-radius: 999px; background:#eef2ff; }
-    .pill.busy { background:#fee2e2; }
-    .muted { color:#6b7280; font-size: 12px; }
-    button { border: 0; border-radius: 10px; padding: 9px 10px; cursor: pointer; }
-    button.primary { background:#111827; color:white; }
-    button.ghost { background:#f3f4f6; }
-    input, select { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid #e5e7eb; }
-    table { width: 100%; border-collapse: collapse; }
-    td, th { padding: 10px; border-bottom: 1px solid #eef0f6; text-align:left; font-size: 13px; }
-    @media (max-width: 900px){ main { grid-template-columns: 1fr; } .grid { grid-template-columns: 1fr; } }
+    :root{
+      --bg:#f5f5f7;
+      --card:#ffffff;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --shadow: 0 10px 25px rgba(0,0,0,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--text)}
+    /* Apple-like top bar */
+    .topbar{
+      position:sticky; top:0; z-index:100;
+      background:rgba(255,255,255,.85); backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .topbar-inner{
+      max-width:1200px; margin:0 auto; padding:10px 16px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700}
+    .brand .dot{width:12px;height:12px;border-radius:999px;background:#111827}
+    .nav{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+    .nav a{
+      text-decoration:none;color:#111827;font-size:14px;opacity:.75;
+      padding:8px 10px;border-radius:999px;
+    }
+    .nav a.active{opacity:1;background:#111827;color:white}
+    .right{display:flex;gap:10px;align-items:center}
+    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:#eef2ff;color:#111827}
+    .btn{
+      border:0;border-radius:12px;padding:10px 12px;cursor:pointer;
+      background:#111827;color:white;font-weight:600;
+    }
+    .btn.ghost{background:#f3f4f6;color:#111827}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    /* Layout */
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .grid{display:grid;gap:14px}
+    .grid-2{grid-template-columns: 1.2fr .8fr}
+    .grid-3{grid-template-columns: repeat(3, minmax(0,1fr))}
+    @media (max-width: 900px){
+      .grid-2,.grid-3{grid-template-columns: 1fr}
+      .nav{gap:8px}
+    }
+    .card{
+      background:var(--card); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:14px;
+    }
+    .title{font-size:16px;font-weight:700;margin:0 0 10px}
+    .muted{color:var(--muted);font-size:12px}
+    .kpi{
+      border:1px solid var(--line); border-radius:14px; padding:12px;
+    }
+    .kpi .label{font-size:12px;color:var(--muted)}
+    .kpi .value{font-size:20px;font-weight:800;margin-top:4px}
+    .kpi .sub{font-size:12px;color:var(--muted);margin-top:6px}
+    /* Forms */
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input, select{
+      width:100%; padding:10px 12px; border-radius:12px;
+      border:1px solid var(--line); background:white;
+      outline:none;
+    }
+    .row{display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .stack{display:grid;gap:10px}
+    hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+    /* Staff cards */
+    .staff{
+      border:1px solid var(--line); border-radius:14px; padding:12px;
+    }
+    .badge{
+      font-size:12px;padding:6px 10px;border-radius:999px;
+      background:#ecfeff;color:#0f172a
+    }
+    .badge.busy{background:#fee2e2}
+    /* Tables */
+    table{width:100%;border-collapse:collapse}
+    th, td{
+      font-size:13px;padding:10px;border-bottom:1px solid #f1f5f9;text-align:left;
+      vertical-align:top;
+    }
+    th{color:var(--muted);font-weight:700}
+    .delta.pos{color:#b91c1c;font-weight:700}  /* above target */
+    .delta.neg{color:#047857;font-weight:700}  /* below target */
+    .hint{
+      padding:10px 12px;border-radius:14px;border:1px dashed var(--line);
+      background:#fafafa;color:#374151;font-size:13px;
+    }
+    .hide{display:none}
   </style>
 </head>
 <body>
-<header>
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <div style="font-weight:700;">Nail Salon Dashboard</div>
-      <div class="muted" style="color:#cbd5e1;">Assign khách → cân bằng income theo thợ</div>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>Nail Salon</div>
+        <span class="pill" id="dayTag">Today</span>
+      </div>
+
+      <nav class="nav">
+        <a href="#" data-page="dashboard" class="active">Dashboard</a>
+        <a href="#" data-page="newCustomer">New Customer</a>
+        <a href="#" data-page="employees">Employees</a>
+        <a href="#" data-page="jobs">Jobs</a>
+        <a href="#" data-page="reports">Reports</a>
+        <a href="#" data-page="settings">Settings</a>
+      </nav>
+
+      <div class="right">
+        <button class="btn ghost" onclick="exportJSON()">Export</button>
+        <button class="btn ghost" onclick="importJSON()">Import</button>
+        <button class="btn ghost" onclick="resetDay()">Reset Day</button>
+      </div>
     </div>
-    <button class="ghost" onclick="resetDay()">Reset Day</button>
   </div>
-</header>
 
-<main>
-  <section class="card">
-    <h2>Employees</h2>
-    <div id="staffGrid" class="grid"></div>
-  </section>
+  <div class="wrap">
 
-  <aside class="card">
-    <h2>New Customer</h2>
-    <div style="display:grid;gap:10px;">
-      <div>
-        <div class="muted">Tên khách</div>
-        <input id="custName" placeholder="VD: Linh / Anna / ..." />
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="grid grid-2">
+      <div class="card">
+        <h2 class="title">KPI Overview</h2>
+        <div class="grid grid-3" id="kpiGrid"></div>
+
+        <hr>
+
+        <div class="row" style="align-items:flex-end;">
+          <div>
+            <div class="title" style="margin:0;">Income Balance Board</div>
+            <div class="muted">Xem ai đang nhiều/thiếu so với “target” (target = tổng doanh thu / số thợ)</div>
+          </div>
+          <button class="btn ghost" onclick="sortBalance()">Sort by Gap</button>
+        </div>
+
+        <div style="overflow:auto;margin-top:10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Thợ</th>
+                <th>Status</th>
+                <th>Skills</th>
+                <th>Income</th>
+                <th>Gap vs Target</th>
+              </tr>
+            </thead>
+            <tbody id="balanceBody"></tbody>
+          </table>
+        </div>
       </div>
 
-      <div>
-        <div class="muted">Dịch vụ</div>
-        <select id="serviceSelect"></select>
+      <aside class="card">
+        <h2 class="title">Quick Assign</h2>
+        <div class="hint" style="margin-bottom:10px;">
+          Auto-balance logic: chỉ xét thợ <b>Available</b> + làm được dịch vụ → chọn người có <b>Income thấp nhất</b>.
+        </div>
+        <div class="stack">
+          <div>
+            <label>Tên khách</label>
+            <input id="qcName" placeholder="VD: Nhat / Linh / ..." />
+          </div>
+          <div>
+            <label>Dịch vụ</label>
+            <select id="qcService"></select>
+          </div>
+          <div>
+            <label>Giá</label>
+            <input id="qcPrice" type="number" min="0" placeholder="Tự ra giá nếu có bảng giá (PRICE_LIST)" />
+          </div>
+          <button class="btn" onclick="assignCustomer(true)">Assign</button>
+          <div class="muted" id="qcMsg"></div>
+        </div>
+
+        <hr>
+
+        <h2 class="title">Now Serving</h2>
+        <div id="nowServing" class="stack"></div>
+      </aside>
+    </section>
+
+    <!-- NEW CUSTOMER -->
+    <section id="page-newCustomer" class="card hide">
+      <h2 class="title">New Customer</h2>
+      <div class="grid grid-2">
+        <div class="stack">
+          <div>
+            <label>Tên khách</label>
+            <input id="custName" placeholder="VD: Anna / Vy / ..." />
+          </div>
+
+          <div>
+            <label>Dịch vụ</label>
+            <select id="serviceSelect"></select>
+          </div>
+
+          <div class="grid grid-2">
+            <div>
+              <label>Giá (tự fill nếu có bảng giá)</label>
+              <input id="priceInput" type="number" min="0" placeholder="VD: 45" />
+            </div>
+            <div>
+              <label>Chế độ gán</label>
+              <select id="assignMode">
+                <option value="auto">Auto-balance</option>
+                <option value="manual">Manual pick</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="manualPickWrap" class="hide">
+            <label>Chọn thợ (manual)</label>
+            <select id="manualStaff"></select>
+            <div class="muted">Chỉ hiện thợ làm được dịch vụ.</div>
+          </div>
+
+          <button class="btn" onclick="assignCustomer(false)">Assign</button>
+          <div class="muted" id="msg"></div>
+        </div>
+
+        <div class="hint">
+          <div style="font-weight:700;margin-bottom:6px;">Lưu ý</div>
+          <ul style="margin:0;padding-left:18px;">
+            <li>Thợ Busy sẽ không được auto-assign.</li>
+            <li>Bấm <b>Done</b> để chuyển về Available và cộng bill vào income.</li>
+            <li>Bảng giá bạn gửi sau → mình map vào <b>PRICE_LIST</b> là tự ra giá.</li>
+          </ul>
+        </div>
       </div>
+    </section>
 
-      <div>
-        <div class="muted">Giá (tạm thời nhập tay — bạn gửi bảng giá sau sẽ tự tính)</div>
-        <input id="priceInput" type="number" min="0" placeholder="VD: 45" />
+    <!-- EMPLOYEES -->
+    <section id="page-employees" class="card hide">
+      <div class="row">
+        <h2 class="title" style="margin:0;">Employees</h2>
+        <div class="muted">Bấm Done để hoàn tất và cập nhật income</div>
       </div>
+      <div class="grid grid-3" id="staffGrid"></div>
+    </section>
 
-      <button class="primary" onclick="assignCustomer()">Assign</button>
-      <div id="msg" class="muted"></div>
-    </div>
+    <!-- JOBS -->
+    <section id="page-jobs" class="card hide">
+      <h2 class="title">Jobs</h2>
+      <div style="overflow:auto;">
+        <table>
+          <thead>
+            <tr><th>Khách</th><th>Dịch vụ</th><th>Giá</th><th>Thợ</th><th>Trạng thái</th></tr>
+          </thead>
+          <tbody id="jobsBody"></tbody>
+        </table>
+      </div>
+    </section>
 
-    <hr style="border:0;border-top:1px solid #eef0f6;margin:14px 0;">
+    <!-- REPORTS -->
+    <section id="page-reports" class="card hide">
+      <h2 class="title">Reports</h2>
+      <div class="grid grid-3" id="reportCards"></div>
+      <hr>
+      <div class="muted">Bạn muốn thêm chart (bar chart income) mình sẽ làm luôn sau khi bạn chốt layout.</div>
+    </section>
 
-    <h2>Current Jobs</h2>
-    <div style="overflow:auto;">
-      <table>
-        <thead>
-          <tr><th>Khách</th><th>Dịch vụ</th><th>Giá</th><th>Thợ</th><th>TT</th></tr>
-        </thead>
-        <tbody id="jobsBody"></tbody>
-      </table>
-    </div>
-  </aside>
-</main>
+    <!-- SETTINGS -->
+    <section id="page-settings" class="card hide">
+      <h2 class="title">Settings</h2>
+      <div class="hint">
+        Khi bạn gửi bảng giá, mình sẽ thay phần này thành “Manage Price List” (thêm/sửa/xoá dịch vụ & giá).
+        Hiện tại bạn chỉ cần gửi bảng giá là mình cắm vào biến <b>PRICE_LIST</b>.
+      </div>
+      <hr>
+      <div class="stack">
+        <div class="muted"><b>TIP:</b> Tất cả dữ liệu đang lưu local trên trình duyệt (localStorage). Export/Import dùng để backup.</div>
+      </div>
+    </section>
+
+  </div>
 
 <script>
-  // --- DATA (từ file D1- staff.xlsx) ---
-  const staff = [
-    {id:1, name:"Ha ha", skills:["Design","đấp bột"], status:"available", total:0, current:null},
-    {id:2, name:"bánh mì", skills:["Design","đắp bột","cắt da Nga"], status:"available", total:0, current:null},
-    {id:3, name:"thùy", skills:["design","extension","heel"], status:"available", total:0, current:null},
-    {id:4, name:"Na", skills:["design","extension","heel"], status:"available", total:0, current:null},
-    {id:5, name:"Tâm", skills:["des simple","H & F spa"], status:"available", total:0, current:null},
-    {id:6, name:"Muối", skills:["des simple","H & F spa"], status:"available", total:0, current:null},
-    {id:7, name:"Thoa", skills:["des simple","H & F spa","gel X"], status:"available", total:0, current:null},
-    {id:8, name:"Vy", skills:["des simple","french","cắt da Nga","wax (H,F,brow…)"], status:"available", total:0, current:null},
-    {id:9, name:"Demi", skills:["des simple","H & F spa","gội","Body"], status:"available", total:0, current:null},
-    {id:10, name:"Nhung", skills:["lashes"], status:"available", total:0, current:null},
-    {id:11, name:"Dung", skills:["Body","facial"], status:"available", total:0, current:null},
-    {id:12, name:"Sathia", skills:["gội","body","wax (all)","facial"], status:"available", total:0, current:null},
-    {id:13, name:"Linh", skills:["body","facial"], status:"available", total:0, current:null},
-    {id:14, name:"Iris", skills:["gội","body","facial"], status:"available", total:0, current:null},
+/** =========================
+ * 1) STAFF (từ file của bạn)
+ * ========================= */
+const STAFF_DEFAULT = [
+  {id:1, name:"Ha ha", skills:["Design","đấp bột"]},
+  {id:2, name:"bánh mì", skills:["Design","đắp bột","cắt da Nga"]},
+  {id:3, name:"thùy", skills:["design","extension","heel"]},
+  {id:4, name:"Na", skills:["design","extension","heel"]},
+  {id:5, name:"Tâm", skills:["des simple","H & F spa"]},
+  {id:6, name:"Muối", skills:["des simple","H & F spa"]},
+  {id:7, name:"Thoa", skills:["des simple","H & F spa","gel X"]},
+  {id:8, name:"Vy", skills:["des simple","french","cắt da Nga","wax (H,F,brow…)"]},
+  {id:9, name:"Demi", skills:["des simple","H & F spa","gội","Body"]},
+  {id:10, name:"Nhung", skills:["lashes"]},
+  {id:11, name:"Dung", skills:["Body","facial"]},
+  {id:12, name:"Sathia", skills:["gội","body","wax (all)","facial"]},
+  {id:13, name:"Linh", skills:["body","facial"]},
+  {id:14, name:"Iris", skills:["gội","body","facial"]},
+].map(s => ({...s, status:"available", total:0, jobsDone:0, current:null}));
+
+/** =========================
+ * 2) PRICE LIST (bạn gửi sau)
+ *    Key nên giống service name
+ * ========================= */
+const PRICE_LIST = {
+  // Ví dụ (bạn gửi sau mình fill):
+  // "Design": 45,
+  // "đắp bột": 60,
+  // "cắt da Nga": 15,
+};
+
+const STORAGE_KEY = "nail_salon_pro_v1";
+
+/** State */
+let state = loadState();
+
+/** Jobs: {name, service, price, staffId, status, ts} */
+function defaultState(){
+  return { staff: structuredClone(STAFF_DEFAULT), jobs: [] , ui:{balanceSort:"gap"} };
+}
+
+/** Utils */
+function $(id){ return document.getElementById(id); }
+function esc(str){ return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function norm(s){ return String(s||"").trim().toLowerCase(); }
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    // basic guard
+    if(!parsed.staff || !Array.isArray(parsed.staff)) return defaultState();
+    if(!parsed.jobs || !Array.isArray(parsed.jobs)) parsed.jobs = [];
+    if(!parsed.ui) parsed.ui = {balanceSort:"gap"};
+    return parsed;
+  }catch(e){
+    return defaultState();
+  }
+}
+
+/** =========================
+ * NAV / PAGES
+ * ========================= */
+document.querySelectorAll(".nav a").forEach(a=>{
+  a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    const page = a.dataset.page;
+    setPage(page);
+  });
+});
+
+function setPage(page){
+  document.querySelectorAll(".nav a").forEach(x=>x.classList.toggle("active", x.dataset.page===page));
+  document.querySelectorAll("[id^='page-']").forEach(sec=>sec.classList.add("hide"));
+  $("page-"+page).classList.remove("hide");
+  renderAll();
+}
+
+/** =========================
+ * SERVICES list
+ * ========================= */
+function getAllServices(){
+  const fromSkills = state.staff.flatMap(s=>s.skills);
+  const set = new Set(fromSkills.map(x=>String(x).trim()));
+  // thêm các service trong PRICE_LIST nếu có
+  Object.keys(PRICE_LIST).forEach(k=>set.add(String(k).trim()));
+  return Array.from(set).sort((a,b)=>a.localeCompare(b));
+}
+function setServiceSelects(){
+  const services = getAllServices();
+  const opt = services.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("");
+  $("serviceSelect").innerHTML = opt;
+  $("qcService").innerHTML = opt;
+}
+
+/** auto fill price */
+function priceOf(service){
+  const key = Object.keys(PRICE_LIST).find(k => norm(k)===norm(service));
+  return key ? Number(PRICE_LIST[key]) : null;
+}
+
+/** manual pick options */
+function refreshManualPick(){
+  const service = $("serviceSelect").value;
+  const list = getEligibleStaff(service, true);
+  $("manualStaff").innerHTML = list.map(s=>`<option value="${s.id}">${esc(s.name)} (Income $${s.total.toFixed(2)})</option>`).join("");
+}
+
+/** =========================
+ * ASSIGN LOGIC (auto-balance)
+ * ========================= */
+function getEligibleStaff(service, includeBusy=false){
+  const sNorm = norm(service);
+  return state.staff.filter(s=>{
+    const can = s.skills.some(sk => norm(sk)===sNorm);
+    const okStatus = includeBusy ? true : (s.status==="available");
+    return can && okStatus;
+  });
+}
+
+function pickStaffAuto(service){
+  const candidates = getEligibleStaff(service, false);
+  if(candidates.length===0) return null;
+  candidates.sort((a,b)=>a.total - b.total);
+  return candidates[0];
+}
+
+/** assignCustomer(fromQuickAssign:boolean) */
+function assignCustomer(fromQuick){
+  const nameEl = fromQuick ? $("qcName") : $("custName");
+  const serviceEl = fromQuick ? $("qcService") : $("serviceSelect");
+  const priceEl = fromQuick ? $("qcPrice") : $("priceInput");
+  const msgEl = fromQuick ? $("qcMsg") : $("msg");
+
+  const name = nameEl.value.trim();
+  const service = serviceEl.value;
+
+  if(!name) return msgEl.textContent = "Nhập tên khách trước nha.";
+  if(!service) return msgEl.textContent = "Chọn dịch vụ nha.";
+
+  // price: if PRICE_LIST has it => auto, else use input
+  const autoP = priceOf(service);
+  const price = autoP ?? Number(priceEl.value);
+
+  if(!Number.isFinite(price) || price<=0){
+    if(autoP==null) return msgEl.textContent = "Chưa có bảng giá cho dịch vụ này → nhập giá tạm thời.";
+    return msgEl.textContent = "Giá không hợp lệ.";
+  }
+
+  const mode = fromQuick ? "auto" : $("assignMode").value;
+
+  let chosen = null;
+  if(mode==="manual"){
+    const id = Number($("manualStaff").value);
+    chosen = state.staff.find(s=>s.id===id);
+    // manual vẫn chặn busy
+    if(!chosen || chosen.status!=="available") return msgEl.textContent = "Thợ này đang Busy hoặc không hợp lệ.";
+    // manual vẫn check skill
+    if(!chosen.skills.some(sk=>norm(sk)===norm(service))) return msgEl.textContent = "Thợ này không làm được dịch vụ.";
+  }else{
+    chosen = pickStaffAuto(service);
+    if(!chosen) return msgEl.textContent = "Không có thợ AVAILABLE làm được dịch vụ này.";
+  }
+
+  chosen.status = "busy";
+  chosen.current = { name, service, price };
+
+  state.jobs.push({ name, service, price, staffId: chosen.id, status:"In progress", ts: Date.now() });
+
+  nameEl.value = "";
+  priceEl.value = "";
+  msgEl.textContent = `Đã gán khách ${name} cho thợ ${chosen.name}.`;
+
+  saveState();
+  renderAll();
+}
+
+/** Done */
+function markDone(staffId){
+  const s = state.staff.find(x=>x.id===staffId);
+  if(!s || !s.current) return;
+
+  const price = Number(s.current.price)||0;
+  s.total += price;
+  s.jobsDone += 1;
+
+  // update latest in-progress job
+  for(let i=state.jobs.length-1;i>=0;i--){
+    if(state.jobs[i].staffId===staffId && state.jobs[i].status==="In progress"){
+      state.jobs[i].status="Done";
+      break;
+    }
+  }
+  s.current = null;
+  s.status = "available";
+
+  saveState();
+  renderAll();
+}
+
+/** =========================
+ * RENDER
+ * ========================= */
+function renderKPI(){
+  const totalRevenue = state.staff.reduce((sum,s)=>sum+s.total,0);
+  const n = state.staff.length || 1;
+  const target = totalRevenue / n;
+
+  const top = [...state.staff].sort((a,b)=>b.total-a.total)[0];
+  const low = [...state.staff].sort((a,b)=>a.total-b.total)[0];
+  const busyCount = state.staff.filter(s=>s.status==="busy").length;
+
+  // imbalance: max gap
+  const gaps = state.staff.map(s => Math.abs(s.total - target));
+  const maxGap = gaps.length ? Math.max(...gaps) : 0;
+
+  const cards = [
+    {label:"Total Revenue", value:`$${totalRevenue.toFixed(2)}`, sub:`Target/staff: $${target.toFixed(2)}`},
+    {label:"Staff Busy", value:`${busyCount}/${state.staff.length}`, sub:`Available: ${state.staff.length-busyCount}`},
+    {label:"Top Income", value:`${top ? esc(top.name) : "-"}`, sub: top ? `$${top.total.toFixed(2)}` : ""},
+    {label:"Lowest Income", value:`${low ? esc(low.name) : "-"}`, sub: low ? `$${low.total.toFixed(2)}` : ""},
+    {label:"Imbalance (Max Gap)", value:`$${maxGap.toFixed(2)}`, sub:`Càng nhỏ càng đều`},
+    {label:"Jobs Done", value:`${state.jobs.filter(j=>j.status==="Done").length}`, sub:`In progress: ${state.jobs.filter(j=>j.status==="In progress").length}`},
   ];
 
-  // Placeholder services list (sau bạn gửi bảng giá, mình sẽ generate từ price list)
-  const allServices = Array.from(new Set(staff.flatMap(s => s.skills)));
+  $("kpiGrid").innerHTML = cards.map(c=>`
+    <div class="kpi">
+      <div class="label">${esc(c.label)}</div>
+      <div class="value">${c.value}</div>
+      <div class="sub">${esc(c.sub||"")}</div>
+    </div>
+  `).join("");
+}
 
-  const jobs = []; // {name, service, price, staffId, status}
+function renderBalanceBoard(){
+  const totalRevenue = state.staff.reduce((sum,s)=>sum+s.total,0);
+  const target = totalRevenue / (state.staff.length || 1);
 
-  function $(id){ return document.getElementById(id); }
-
-  function renderServices(){
-    const sel = $("serviceSelect");
-    sel.innerHTML = allServices.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join("");
+  let list = [...state.staff];
+  if(state.ui.balanceSort==="gap"){
+    list.sort((a,b)=>Math.abs(b.total-target)-Math.abs(a.total-target));
+  }else{
+    list.sort((a,b)=>b.total-a.total);
   }
 
-  function renderStaff(){
-    const grid = $("staffGrid");
-    grid.innerHTML = staff.map(s => {
-      const pillClass = s.status === "available" ? "pill" : "pill busy";
-      const pillText = s.status === "available" ? "Available" : "Busy";
-      const current = s.current ? `<div class="muted">Đang làm: <b>${escapeHtml(s.current.name)}</b> • ${escapeHtml(s.current.service)} • $${s.current.price}</div>` : `<div class="muted">Rảnh</div>`;
-      return `
-        <div class="staff">
-          <div class="row">
-            <div style="font-weight:700;">${escapeHtml(s.name)}</div>
-            <span class="${pillClass}">${pillText}</span>
-          </div>
-          <div class="muted" style="margin:6px 0;">Skills: ${escapeHtml(s.skills.join(", "))}</div>
-          ${current}
-          <div class="row" style="margin-top:10px;">
-            <div><span class="muted">Total:</span> <b>$${s.total.toFixed(2)}</b></div>
-            <button class="ghost" onclick="markDone(${s.id})" ${s.status==="available" ? "disabled" : ""}>Done</button>
-          </div>
+  $("balanceBody").innerHTML = list.map(s=>{
+    const gap = s.total - target;
+    const cls = gap >= 0 ? "pos" : "neg";
+    const statusBadge = s.status==="available"
+      ? `<span class="badge">Available</span>`
+      : `<span class="badge busy">Busy</span>`;
+    return `
+      <tr>
+        <td><b>${esc(s.name)}</b></td>
+        <td>${statusBadge}</td>
+        <td class="muted">${esc(s.skills.join(", "))}</td>
+        <td><b>$${s.total.toFixed(2)}</b></td>
+        <td class="delta ${cls}">${gap>=0?"+":""}$${gap.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function renderNowServing(){
+  const busy = state.staff.filter(s=>s.status==="busy" && s.current);
+  if(busy.length===0){
+    $("nowServing").innerHTML = `<div class="muted">Chưa có ai đang phục vụ.</div>`;
+    return;
+  }
+  $("nowServing").innerHTML = busy.map(s=>`
+    <div class="staff">
+      <div class="row">
+        <div style="font-weight:800;">${esc(s.name)}</div>
+        <span class="badge busy">Busy</span>
+      </div>
+      <div class="muted" style="margin-top:6px;">
+        Khách: <b>${esc(s.current.name)}</b><br/>
+        Dịch vụ: ${esc(s.current.service)}<br/>
+        Giá: <b>$${Number(s.current.price).toFixed(2)}</b>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn ghost" onclick="markDone(${s.id})">Done</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderStaff(){
+  $("staffGrid").innerHTML = state.staff.map(s=>{
+    const badge = s.status==="available"
+      ? `<span class="badge">Available</span>`
+      : `<span class="badge busy">Busy</span>`;
+    const current = s.current
+      ? `<div class="muted">Đang làm: <b>${esc(s.current.name)}</b> • ${esc(s.current.service)} • $${Number(s.current.price).toFixed(2)}</div>`
+      : `<div class="muted">Rảnh</div>`;
+
+    return `
+      <div class="staff">
+        <div class="row">
+          <div style="font-weight:800;">${esc(s.name)}</div>
+          ${badge}
         </div>
-      `;
-    }).join("");
-  }
+        <div class="muted" style="margin:6px 0;">Skills: ${esc(s.skills.join(", "))}</div>
+        ${current}
+        <div class="row" style="margin-top:10px;">
+          <div>
+            <div class="muted">Income</div>
+            <div style="font-weight:900;">$${s.total.toFixed(2)}</div>
+          </div>
+          <div>
+            <div class="muted">Jobs Done</div>
+            <div style="font-weight:900;">${s.jobsDone}</div>
+          </div>
+          <button class="btn ghost" onclick="markDone(${s.id})" ${s.status==="available" ? "disabled" : ""}>Done</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
 
-  function renderJobs(){
-    const body = $("jobsBody");
-    body.innerHTML = jobs.map(j => {
-      const stName = staff.find(s=>s.id===j.staffId)?.name || "";
-      return `<tr>
-        <td>${escapeHtml(j.name)}</td>
-        <td>${escapeHtml(j.service)}</td>
+function renderJobs(){
+  $("jobsBody").innerHTML = state.jobs.slice().reverse().map(j=>{
+    const stName = state.staff.find(s=>s.id===j.staffId)?.name || "";
+    return `
+      <tr>
+        <td>${esc(j.name)}</td>
+        <td>${esc(j.service)}</td>
         <td>$${Number(j.price).toFixed(2)}</td>
-        <td>${escapeHtml(stName)}</td>
-        <td>${escapeHtml(j.status)}</td>
-      </tr>`;
-    }).join("");
-  }
+        <td>${esc(stName)}</td>
+        <td>${esc(j.status)}</td>
+      </tr>
+    `;
+  }).join("");
+}
 
-  // Auto-assign: chọn thợ Available + làm được service + total income thấp nhất
-  function pickStaff(service){
-    const candidates = staff.filter(s =>
-      s.status==="available" &&
-      s.skills.map(x=>x.toLowerCase()).includes(service.toLowerCase())
-    );
-    if(candidates.length===0) return null;
-    candidates.sort((a,b) => a.total - b.total);
-    return candidates[0];
-  }
+function renderReports(){
+  const totalRevenue = state.staff.reduce((sum,s)=>sum+s.total,0);
+  const target = totalRevenue / (state.staff.length || 1);
+  const top = [...state.staff].sort((a,b)=>b.total-a.total)[0];
+  const low = [...state.staff].sort((a,b)=>a.total-b.total)[0];
 
-  function assignCustomer(){
-    const name = $("custName").value.trim();
-    const service = $("serviceSelect").value;
-    const price = Number($("priceInput").value);
+  const cards = [
+    {label:"Target Income / Staff", value:`$${target.toFixed(2)}`},
+    {label:"Top", value:`${top ? esc(top.name) : "-"}`, sub: top ? `$${top.total.toFixed(2)}` : ""},
+    {label:"Lowest", value:`${low ? esc(low.name) : "-"}`, sub: low ? `$${low.total.toFixed(2)}` : ""},
+  ];
+  $("reportCards").innerHTML = cards.map(c=>`
+    <div class="kpi">
+      <div class="label">${esc(c.label)}</div>
+      <div class="value">${c.value}</div>
+      <div class="sub">${esc(c.sub||"")}</div>
+    </div>
+  `).join("");
+}
 
-    if(!name) return msg("Nhập tên khách trước nha.");
-    if(!service) return msg("Chọn dịch vụ nha.");
-    if(!Number.isFinite(price) || price<=0) return msg("Nhập giá tạm thời (>0).");
+function renderAssignMode(){
+  const mode = $("assignMode").value;
+  $("manualPickWrap").classList.toggle("hide", mode!=="manual");
+  if(mode==="manual") refreshManualPick();
+}
 
-    const chosen = pickStaff(service);
-    if(!chosen) return msg("Không có thợ AVAILABLE làm được dịch vụ này.");
+/** Hook events */
+$("assignMode").addEventListener("change", renderAssignMode);
+$("serviceSelect").addEventListener("change", ()=>{
+  // auto fill price if available
+  const p = priceOf($("serviceSelect").value);
+  if(p!=null) $("priceInput").value = p;
+  if($("assignMode").value==="manual") refreshManualPick();
+});
+$("qcService").addEventListener("change", ()=>{
+  const p = priceOf($("qcService").value);
+  if(p!=null) $("qcPrice").value = p;
+});
 
-    // set busy + current
-    chosen.status = "busy";
-    chosen.current = { name, service, price };
+/** Global render */
+function renderAll(){
+  setServiceSelects();
 
-    jobs.push({ name, service, price, staffId: chosen.id, status: "In progress" });
+  // auto fill prices if PRICE_LIST has it
+  const p1 = priceOf($("serviceSelect").value);
+  if(p1!=null) $("priceInput").value = p1;
+  const p2 = priceOf($("qcService").value);
+  if(p2!=null) $("qcPrice").value = p2;
 
-    $("custName").value = "";
-    $("priceInput").value = "";
-    msg(`Đã gán khách ${name} cho thợ ${chosen.name}.`);
+  renderKPI();
+  renderBalanceBoard();
+  renderNowServing();
+  renderStaff();
+  renderJobs();
+  renderReports();
+}
 
-    renderAll();
-  }
-
-  function markDone(staffId){
-    const s = staff.find(x=>x.id===staffId);
-    if(!s || !s.current) return;
-
-    // update totals
-    s.total += Number(s.current.price);
-
-    // update job status
-    const j = [...jobs].reverse().find(x => x.staffId===staffId && x.status==="In progress");
-    if(j) j.status = "Done";
-
-    // free staff
-    s.current = null;
-    s.status = "available";
-
-    msg(`Done: ${s.name} đã xong và trở lại Available.`);
-    renderAll();
-  }
-
-  function resetDay(){
-    if(!confirm("Reset toàn bộ doanh thu + jobs hôm nay?")) return;
-    staff.forEach(s => { s.status="available"; s.total=0; s.current=null; });
-    jobs.length = 0;
-    msg("Đã reset.");
-    renderAll();
-  }
-
-  function msg(t){ $("msg").textContent = t; }
-
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  function renderAll(){
-    renderStaff();
-    renderJobs();
-  }
-
-  // init
-  renderServices();
+/** Sort toggle */
+function sortBalance(){
+  state.ui.balanceSort = (state.ui.balanceSort==="gap") ? "income" : "gap";
+  saveState();
   renderAll();
+}
+
+/** Reset */
+function resetDay(){
+  if(!confirm("Reset toàn bộ doanh thu + jobs hôm nay?")) return;
+  state = defaultState();
+  saveState();
+  renderAll();
+}
+
+/** Export / Import */
+function exportJSON(){
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "nail-salon-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importJSON(){
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = () => {
+    const file = input.files?.[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(String(reader.result||""));
+        if(!parsed.staff || !Array.isArray(parsed.staff)) throw new Error("Invalid file");
+        state = parsed;
+        saveState();
+        renderAll();
+        alert("Import OK!");
+      }catch(e){
+        alert("File không hợp lệ.");
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/** Init */
+renderAll();
 </script>
 </body>
 </html>
