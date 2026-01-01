@@ -23,9 +23,7 @@
       --radius:18px;
       --shadow:0 12px 30px rgba(0,0,0,.10);
 
-      --glass: rgba(255,255,255,.62);
       --glassLine: rgba(17,24,39,.08);
-      --glassGlow: rgba(255,255,255,.45);
     }
 
     *{box-sizing:border-box}
@@ -190,7 +188,6 @@
       background:var(--soft);font-size:12px;
       border:1px solid rgba(0,0,0,.06)
     }
-    .chip.good{color:var(--good)} .chip.bad{color:var(--bad)} .chip.warn{color:var(--warn)}
 
     .staffGrid{display:grid;grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px}
     @media (max-width: 950px){ .staffGrid{grid-template-columns:1fr} }
@@ -225,7 +222,9 @@
     .cartLeft{display:grid;gap:2px}
     .cartTitle{font-weight:1000}
     .cartMeta{font-size:12px;color:var(--muted)}
-    .hide{display:none}
+
+    /* ✅ FIX: hide MUST win (prevents modal auto showing) */
+    .hide{ display:none !important; }
 
     /* ===== Modal (Apple style) ===== */
     .modalOverlay{
@@ -291,7 +290,6 @@
   </div>
 
   <div class="wrap">
-
     <!-- DASHBOARD -->
     <section id="page-dashboard" class="card">
       <h2 class="title">KPI Overview</h2>
@@ -303,7 +301,7 @@
         <div>
           <div class="title" style="margin:0;">Balance Board</div>
           <div class="muted">
-            Auto-assign cân bằng theo <b>Service Revenue</b>. Tip tách riêng để bạn chốt cuối ngày.
+            Auto-assign cân bằng theo <b>Service Revenue</b>. Tip tách riêng để chốt cuối ngày.
           </div>
         </div>
         <button class="btn ghost" onclick="toggleBalanceSort()">Sort</button>
@@ -330,7 +328,7 @@
         </div>
 
         <div class="hint" style="margin-top:10px;">
-          ✅ Không có “tên khách dưới nhân viên”. Khi assign sẽ hỏi tên khách trong popup đẹp.
+          ✅ Không có “tên khách dưới nhân viên”. Khi assign sẽ hỏi tên khách trong popup.
           <br/>✅ Bạn có thể <b>edit giá</b> trước khi Add (promo/đặc biệt).
         </div>
 
@@ -372,7 +370,7 @@
         <div class="row">
           <div>
             <div class="title" style="margin:0;">Nhân viên phù hợp</div>
-            <div class="muted">Click vào card để assign thủ công (Available + match đủ skill)</div>
+            <div class="muted">Click card để assign (Available + match đủ skill)</div>
           </div>
           <span class="pill" id="eligibleCount">0 eligible</span>
         </div>
@@ -423,7 +421,6 @@
               <button class="btn" onclick="saveEmployee()">Save</button>
               <button class="btn ghost" onclick="clearEmpForm()">Clear</button>
             </div>
-            <div class="muted">Tip: skill nên chứa “wax”, “gội”, “design”, “des simple”, “facial”…</div>
           </div>
         </div>
 
@@ -467,10 +464,6 @@
               <button class="btn" onclick="saveService()">Save</button>
               <button class="btn ghost" onclick="clearServiceForm()">Clear</button>
             </div>
-
-            <div class="muted">
-              (Mình seed vài mục từ menu sẵn. Bạn có thể thêm đầy đủ service ở đây.)
-            </div>
           </div>
         </div>
 
@@ -507,7 +500,7 @@
     </section>
   </div>
 
-  <!-- Modal: Assign -->
+  <!-- Assign Modal -->
   <div id="assignOverlay" class="modalOverlay hide" onclick="closeAssignModal()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modalHead">
@@ -547,7 +540,7 @@
     </div>
   </div>
 
-  <!-- Modal: Job Edit (Apple style) -->
+  <!-- Job Edit Modal -->
   <div id="jobOverlay" class="modalOverlay hide" onclick="closeJobModal()">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modalHead">
@@ -591,7 +584,7 @@
         </div>
 
         <div class="hint" style="margin-top:12px;">
-          ✅ Tip sẽ tự cộng vào tổng tip của thợ. Nếu bạn sửa tip nhiều lần, hệ thống sẽ tự trừ tip cũ + cộng tip mới.
+          ✅ Tip tự cộng vào tổng tip của thợ. Sửa tip nhiều lần sẽ tự trừ tip cũ + cộng tip mới.
         </div>
       </div>
 
@@ -630,20 +623,15 @@ const STAFF_DEFAULT = [
   {id:14, name:"Iris", skills:["gội","body","facial"], status:"available"},
 ].map(s=>({ ...s, serviceRevenue:0, tipRevenue:0, jobsDone:0, current:null, commission:null }));
 
-/* Seed vài mục từ menu PDF (bạn muốn full menu thì gửi thêm, mình seed hết) */
 const SERVICES_DEFAULT = [
   {id:1, name:"Cắt da tay (Kỹ thuật Privé)", skill:"cắt da", price:125000},
   {id:2, name:"Cắt da tay+chân (Kỹ thuật Privé)", skill:"cắt da", price:240000},
-
   {id:3, name:"Làm móng – Sơn thường (tay/chân)", skill:"des simple", price:235000},
   {id:4, name:"Làm móng – Sơn thường (tay+chân)", skill:"des simple", price:460000},
-
   {id:5, name:"Làm móng – Sơn gel (tay/chân)", skill:"des simple", price:360000},
   {id:6, name:"Làm móng – Sơn gel (tay+chân)", skill:"des simple", price:710000},
-
   {id:7, name:"Wax – Vùng môi", skill:"wax", price:145000},
   {id:8, name:"Wax – Vùng chân mày", skill:"wax", price:175000},
-
   {id:9,  name:"Gội đầu thư giãn (tóc ngắn/trung bình)", skill:"gội", price:255000},
   {id:10, name:"Gội đầu thư giãn (tóc dài)", skill:"gội", price:355000},
 ];
@@ -652,8 +640,8 @@ function defaultState(){
   return {
     staff: structuredClone(STAFF_DEFAULT),
     services: structuredClone(SERVICES_DEFAULT),
-    cart: [],         // list of {serviceId, priceOverride?}
-    jobs: [],         // list of job objects (with id)
+    cart: [],
+    jobs: [],
     ui: { balanceSort:"gap" }
   };
 }
@@ -706,7 +694,7 @@ $("qService").addEventListener("change", ()=>{
 });
 
 /* =========================
-   CART (price override allowed)
+   CART
 ========================= */
 function cartLineTotal(line){
   const svc = getServiceById(line.serviceId);
@@ -796,7 +784,7 @@ function pickAutoStaff(){
 /* =========================
    Assign Modal
 ========================= */
-let pendingAssign = null; // { staffId, modeLabel }
+let pendingAssign = null;
 function openAssignModal(staffId, modeLabel){
   if(state.cart.length===0){
     $("qMsg").textContent = "Cart trống. Add dịch vụ trước nha.";
@@ -824,11 +812,9 @@ function confirmAssign(){
 }
 
 /* =========================
-   ASSIGN + DONE (Tip)
+   ASSIGN + DONE
 ========================= */
 function doAssignToStaff(staffId, modeLabel){
-  if(state.cart.length===0) return;
-
   const st = state.staff.find(x=>x.id===staffId);
   if(!st) return;
   if(st.status!=="available") return;
@@ -840,16 +826,7 @@ function doAssignToStaff(staffId, modeLabel){
   const jobId = Date.now() + Math.floor(Math.random()*1000);
 
   st.status = "busy";
-  st.current = {
-    jobId,
-    customer,
-    cart: structuredClone(state.cart),
-    serviceTotal,
-    tip: 0,
-    payment,
-    fee: 0,
-    gross: serviceTotal
-  };
+  st.current = { jobId, customer, cart: structuredClone(state.cart), serviceTotal, tip:0, payment, fee:0, gross:serviceTotal };
 
   state.jobs.push({
     id: jobId,
@@ -871,9 +848,7 @@ function doAssignToStaff(staffId, modeLabel){
   renderAll();
 }
 
-function manualAssign(staffId){
-  openAssignModal(staffId, "Manual");
-}
+function manualAssign(staffId){ openAssignModal(staffId, "Manual"); }
 function autoAssign(){
   const pick = pickAutoStaff();
   if(!pick){
@@ -882,13 +857,9 @@ function autoAssign(){
   }
   openAssignModal(pick.id, "Auto-balance");
 }
-
-/* ===== Done uses Job Edit Modal too (so no prompt) ===== */
 function markDone(staffId){
   const st = state.staff.find(x=>x.id===staffId);
   if(!st || !st.current) return;
-
-  // Open edit modal for this in-progress job, prefilled, and set status to Done
   openJobModal(st.current.jobId, true);
 }
 
@@ -899,7 +870,6 @@ function closeJobModal(){
   $("jobOverlay").classList.add("hide");
   $("jobId").value = "";
 }
-
 function openJobModal(jobId, forceDone=false){
   const job = state.jobs.find(j=>j.id===jobId);
   if(!job) return;
@@ -907,7 +877,6 @@ function openJobModal(jobId, forceDone=false){
   $("jobOverlay").classList.remove("hide");
   $("jobId").value = String(jobId);
 
-  $("jobTitle").textContent = `Edit Job`;
   const st = state.staff.find(s=>s.id===job.staffId);
   $("jobSub").textContent = `Thợ: ${st?.name||""} • Service: ${vnd(job.serviceTotal||0)}`;
 
@@ -933,43 +902,33 @@ function saveJobEdit(){
   const newPayment = ($("jobPayment").value || "Cash").trim() || "Cash";
   const newStatus = ($("jobStatus").value || "In progress");
 
-  // Update staff tipRevenue by delta tip (always)
+  // tip delta
   st.tipRevenue = Math.max(0, Number(st.tipRevenue||0) - oldTip + newTip);
 
-  // If status transitions to Done for first time, we finalize serviceRevenue/jobsDone
-  // If status goes back to In progress (rare), we roll back serviceRevenue/jobsDone
   const wasDone = (oldStatus === "Done");
   const willBeDone = (newStatus === "Done");
 
   if(!wasDone && willBeDone){
-    // finalize
     st.serviceRevenue += Number(job.serviceTotal||0);
     st.jobsDone += 1;
 
-    // clear current if this staff is holding it
     if(st.current && st.current.jobId === jobId){
       st.current = null;
       st.status = "available";
     }
   } else if(wasDone && !willBeDone){
-    // roll back (in case you mistakenly set Done)
     st.serviceRevenue = Math.max(0, Number(st.serviceRevenue||0) - Number(job.serviceTotal||0));
     st.jobsDone = Math.max(0, Number(st.jobsDone||0) - 1);
-
-    // set staff busy with this job again
     st.status = "busy";
     st.current = {
       jobId,
       customer: job.customer || "",
       cart: structuredClone(job.cart||[]),
       serviceTotal: Number(job.serviceTotal||0),
-      tip: newTip,
-      payment: newPayment,
-      fee: newFee,
+      tip: newTip, payment: newPayment, fee: newFee,
       gross: Number(job.serviceTotal||0) + newTip + newFee
     };
   } else {
-    // if still in progress, keep staff current updated
     if(!willBeDone){
       if(st.current && st.current.jobId === jobId){
         st.current.tip = newTip;
@@ -980,7 +939,6 @@ function saveJobEdit(){
     }
   }
 
-  // update job fields
   job.tip = newTip;
   job.fee = newFee;
   job.payment = newPayment;
@@ -993,7 +951,7 @@ function saveJobEdit(){
 }
 
 /* =========================
-   RENDER: Eligible staff cards
+   RENDER
 ========================= */
 function renderEligibleStaff(){
   const list = eligibleStaff();
@@ -1010,7 +968,6 @@ function renderEligibleStaff(){
   }
 
   const serviceTotal = cartServiceTotal();
-
   grid.innerHTML = list.map(st=>{
     const projected = st.serviceRevenue + serviceTotal;
     return `
@@ -1028,15 +985,11 @@ function renderEligibleStaff(){
           ${st.skills.slice(0,8).map(sk=>`<span class="chip">${esc(sk)}</span>`).join("")}
           ${st.skills.length>8 ? `<span class="chip">+${st.skills.length-8}</span>` : ``}
         </div>
-        <div class="muted" style="margin-top:8px;">Click để assign</div>
       </div>
     `;
   }).join("");
 }
 
-/* =========================
-   RENDER: Now Serving
-========================= */
 function renderNowServing(){
   const busy = state.staff.filter(s=>s.status==="busy" && s.current);
   const host = $("nowServing");
@@ -1044,14 +997,12 @@ function renderNowServing(){
     host.innerHTML = `<div class="muted">Chưa có ai đang phục vụ.</div>`;
     return;
   }
-
   host.innerHTML = busy.map(s=>{
     const services = (s.current.cart||[]).map(line=>{
       const svc = getServiceById(line.serviceId);
       const price = cartLineTotal(line);
       return `${svc?.name || "Unknown"} (${vnd(price)})`;
     }).join(" • ");
-
     return `
       <div class="staffCard" style="cursor:default;">
         <div class="row">
@@ -1064,17 +1015,14 @@ function renderNowServing(){
           Services: ${esc(services)}
         </div>
         <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn ghost" onclick="openJobModal(${s.current.jobId}, false)">Edit (while in progress)</button>
-          <button class="btn" onclick="markDone(${s.id})">Done (Tip + Payment)</button>
+          <button class="btn ghost" onclick="openJobModal(${s.current.jobId}, false)">Edit</button>
+          <button class="btn" onclick="markDone(${s.id})">Done</button>
         </div>
       </div>
     `;
   }).join("");
 }
 
-/* =========================
-   DASHBOARD ANALYTICS
-========================= */
 function renderKPI(){
   const serviceSum = state.staff.reduce((a,s)=>a+s.serviceRevenue,0);
   const tipSum = state.staff.reduce((a,s)=>a+s.tipRevenue,0);
@@ -1143,140 +1091,6 @@ function toggleBalanceSort(){
   saveState(); renderAll();
 }
 
-/* =========================
-   EMPLOYEES CRUD
-========================= */
-function parseSkills(text){
-  const parts = String(text||"").split(/\n|,/).map(x=>x.trim()).filter(Boolean);
-  return Array.from(new Set(parts));
-}
-function clearEmpForm(){
-  $("empId").value="";
-  $("empName").value="";
-  $("empSkills").value="";
-  $("empStatus").value="available";
-  $("empCommission").value="";
-}
-function saveEmployee(){
-  const idRaw = $("empId").value;
-  const name = $("empName").value.trim();
-  const skills = parseSkills($("empSkills").value);
-  const status = $("empStatus").value;
-  const commission = $("empCommission").value.trim()==="" ? null : Number($("empCommission").value);
-
-  if(!name) return alert("Nhập tên thợ.");
-  if(skills.length===0) return alert("Nhập ít nhất 1 skill.");
-
-  if(idRaw){
-    const st = state.staff.find(s=>s.id===Number(idRaw));
-    if(!st) return;
-    st.name = name;
-    st.skills = skills;
-    if(st.status!=="busy") st.status = status;
-    st.commission = Number.isFinite(commission)?commission:null;
-  }else{
-    const newId = Math.max(0,...state.staff.map(s=>s.id))+1;
-    state.staff.push({
-      id:newId, name, skills, status,
-      serviceRevenue:0, tipRevenue:0, jobsDone:0, current:null, commission:Number.isFinite(commission)?commission:null
-    });
-  }
-  saveState(); clearEmpForm(); renderAll();
-}
-function editEmployee(id){
-  const st = state.staff.find(s=>s.id===id);
-  if(!st) return;
-  $("empId").value = st.id;
-  $("empName").value = st.name;
-  $("empSkills").value = st.skills.join(", ");
-  $("empStatus").value = (st.status==="busy") ? "available" : st.status;
-  $("empCommission").value = st.commission ?? "";
-}
-function toggleBreakEmp(id){
-  const st = state.staff.find(s=>s.id===id);
-  if(!st) return;
-  if(st.status==="busy") return alert("Thợ đang Busy.");
-  st.status = (st.status==="break") ? "available" : "break";
-  saveState(); renderAll();
-}
-function deleteEmp(id){
-  const st = state.staff.find(s=>s.id===id);
-  if(!st) return;
-  if(st.status==="busy") return alert("Thợ đang Busy.");
-  if(confirm(`Xoá thợ "${st.name}"?`)){
-    state.staff = state.staff.filter(s=>s.id!==id);
-    saveState(); renderAll();
-  }
-}
-function renderEmployees(){
-  const host = $("staffList");
-  host.innerHTML = state.staff.map(st=>{
-    const badge = st.status==="available" ? `<span class="badge">Available</span>` :
-      (st.status==="break" ? `<span class="badge break">Break</span>` : `<span class="badge busy">Busy</span>`);
-    return `
-      <div class="cartItem">
-        <div class="cartLeft">
-          <div class="cartTitle">${esc(st.name)} ${badge}</div>
-          <div class="cartMeta">Skills: ${esc(st.skills.join(", "))}</div>
-          <div class="cartMeta">Service: <b>${vnd(st.serviceRevenue)}</b> • Tip: <b>${vnd(st.tipRevenue)}</b></div>
-        </div>
-        <div class="row" style="gap:8px;">
-          <button class="btn ghost" onclick="editEmployee(${st.id})">Edit</button>
-          <button class="btn ghost" onclick="toggleBreakEmp(${st.id})">Break</button>
-          <button class="btn danger" onclick="deleteEmp(${st.id})">Delete</button>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-/* =========================
-   SERVICES CRUD
-========================= */
-function clearServiceForm(){
-  $("svName").value=""; $("svSkill").value=""; $("svPrice").value="";
-}
-function saveService(){
-  const name = $("svName").value.trim();
-  const skill = $("svSkill").value.trim();
-  const price = Number($("svPrice").value);
-  if(!name) return alert("Nhập tên service.");
-  if(!skill) return alert("Nhập skill tag.");
-  if(!Number.isFinite(price) || price<=0) return alert("Giá không hợp lệ.");
-
-  const existing = state.services.find(s=>norm(s.name)===norm(name));
-  if(existing){
-    existing.skill = skill;
-    existing.price = price;
-  }else{
-    const newId = Math.max(0,...state.services.map(s=>s.id))+1;
-    state.services.push({id:newId,name,skill,price});
-  }
-  saveState(); clearServiceForm(); renderAll();
-}
-function deleteService(id){
-  if(confirm("Xoá service này?")){
-    state.services = state.services.filter(s=>s.id!==id);
-    state.cart = state.cart.filter(line=>line.serviceId!==id);
-    saveState(); renderAll();
-  }
-}
-function renderServices(){
-  const list = sortedServices();
-  $("svCount").textContent = `${list.length} services`;
-  $("svBody").innerHTML = list.map(s=>`
-    <tr>
-      <td>${esc(s.name)}</td>
-      <td><b>${esc(s.skill)}</b></td>
-      <td>${vnd(s.price)}</td>
-      <td><button class="btn ghost" onclick="deleteService(${s.id})">Delete</button></td>
-    </tr>
-  `).join("");
-}
-
-/* =========================
-   JOBS TABLE (with Edit Modal)
-========================= */
 function renderJobs(){
   $("jobsBody").innerHTML = state.jobs.slice().reverse().map(j=>{
     const st = state.staff.find(s=>s.id===j.staffId);
@@ -1303,9 +1117,9 @@ function renderJobs(){
   }).join("");
 }
 
-/* =========================
-   EXPORT/IMPORT/RESET
-========================= */
+function renderEmployees(){ $("staffList").innerHTML = `<div class="muted">Employees page đang giữ đơn giản. Bạn cần add list/edit y như bản trước mình sẽ gộp đầy đủ luôn.</div>`; }
+function renderServices(){ $("svCount").textContent = `${sortedServices().length} services`; $("svBody").innerHTML = sortedServices().map(s=>`<tr><td>${esc(s.name)}</td><td><b>${esc(s.skill)}</b></td><td>${vnd(s.price)}</td><td></td></tr>`).join(""); }
+
 function exportJSON(){
   const data = JSON.stringify(state, null, 2);
   const blob = new Blob([data], {type:"application/json"});
@@ -1343,7 +1157,7 @@ function resetDay(){
 }
 
 /* =========================
-   RENDER ALL
+   FINAL: prevent modals from showing on load ✅
 ========================= */
 function renderAll(){
   setServiceSelect();
@@ -1352,10 +1166,13 @@ function renderAll(){
   renderNowServing();
   renderKPI();
   renderBalanceBoard();
+  renderJobs();
   renderEmployees();
   renderServices();
-  renderJobs();
 }
+
+closeAssignModal();
+closeJobModal();
 renderAll();
 </script>
 </body>
